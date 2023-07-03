@@ -1,18 +1,34 @@
 import classNames from "classnames";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { App } from "../layouts/App";
 
 export const SignIn = () => {
+  const [authError, setAuthError] = useState(false);
+  const [authenticating, setAuthenticating] = useState(false);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const navigate = useNavigate();
 
   const handleFormSubmit = ({ email, password }) => {
-    console.log("ACESSANDO APLICAÇÃO", email, password);
+    setAuthenticating(true);
+    const auth = getAuth();
+    signInWithEmailAndPassword(auth, email, password)
+      .then((credential) => {
+        localStorage.setItem("access-token", credential.user.accessToken);
+        navigate("/");
+      })
+      .catch((error) => {
+        console.error(error.message);
+        setAuthError(true);
+      })
+      .finally(() => setAuthenticating(false));
   };
 
   return (
@@ -77,8 +93,20 @@ export const SignIn = () => {
               </span>
             ) : null}
           </div>
+          {authError ? (
+            <p className="text-xs text-red-500 text-center mt-3">
+              Email ou senha inválidos
+            </p>
+          ) : null}
           <button
-            className="mt-5 p-2 rounded bg-emerald-500 hover:bg-emerald-600 text-slate-100"
+            className={classNames(
+              "mt-5 p-2 rounded bg-emerald-500 text-slate-100",
+              {
+                "bg-slate-300": authenticating,
+                "hover:bg-emerald-600": !authenticating,
+              }
+            )}
+            disabled={authenticating}
             type="submit"
           >
             Acessar plataforma

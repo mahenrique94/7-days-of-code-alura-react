@@ -1,26 +1,35 @@
-import { useState } from 'react'
+import jwtDecode from "jwt-decode";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { App } from '../layouts/App'
+import { App } from "../layouts/App";
 
 export const Home = () => {
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+  const user = jwtDecode(localStorage.getItem("access-token"));
 
   const handleLogout = () => {
-    console.log('SAINDO DA APLICACAO')
-  }
+    localStorage.removeItem("access-token");
+    navigate("/sign-in");
+  };
 
   const handleFormSubmit = (event) => {
-    event.preventDefault()
-    console.log('PUBLICANDO UM NOVO TWEET')
-  }
+    event.preventDefault();
+    console.log("PUBLICANDO UM NOVO TWEET");
+  };
 
   return (
     <App>
       <div className="bg-gray-100 min-h-screen w-screen">
         <div className="flex justify-between px-5 py-2 border-b bg-white">
-          <span className="font-sans text-lg text-sky-500 lowercase">Aluritter</span>
+          <span className="font-sans text-lg text-sky-500 lowercase">
+            Aluritter
+          </span>
           <div>
-            <span className="font-sans text-sm text-gray-500 mr-2">email@exemplo.com</span>
+            <span className="font-sans text-sm text-gray-500 mr-2">
+              {user.email}
+            </span>
             <button
               className="bg-red-500 text-white lowercase rounded px-2 py-1 text-sm hover:bg-red-600"
               onClick={handleLogout}
@@ -37,30 +46,43 @@ export const Home = () => {
               <textarea
                 className="border rounded w-full resize-none text-gray-500 p-5 my-2"
                 maxLength={255}
-                onChange={event => setMessage(event.target.value)}
+                onChange={(event) => setMessage(event.target.value)}
                 rows={3}
                 value={message}
               />
             </div>
             <div className="flex justify-between">
-              {message.length < 255
-                ? <p className="text-sm text-green-600">Você ainda pode digitar {255-message.length} caracteres</p>
-                : <p className="text-sm text-red-600">Você esgotou a quantidade de caracteres</p>
-              }
-              <button className="bg-sky-500 p-2 rounded text-white hover:bg-sky-600">aluritar</button>
+              {message.length < 255 ? (
+                <p className="text-sm text-green-600">
+                  Você ainda pode digitar {255 - message.length} caracteres
+                </p>
+              ) : (
+                <p className="text-sm text-red-600">
+                  Você esgotou a quantidade de caracteres
+                </p>
+              )}
+              <button className="bg-sky-500 p-2 rounded text-white hover:bg-sky-600">
+                aluritar
+              </button>
             </div>
           </form>
           <div className="pt-5">
             <div className="border px-4 py-2 bg-white rounded mt-5 first:mt-0">
-              <p className="text-gray-500 py-2 mb-5">Pagina principal com estrutura e estilos</p>
+              <p className="text-gray-500 py-2 mb-5">
+                Pagina principal com estrutura e estilos
+              </p>
               <div className="flex justify-between">
-                <span className="text-sm text-sky-500">email@exemplo.com.br</span>
-                <time className="text-xs text-gray-500">01/01/2023 5:00:00 PM</time>
+                <span className="text-sm text-sky-500">
+                  email@exemplo.com.br
+                </span>
+                <time className="text-xs text-gray-500">
+                  01/01/2023 5:00:00 PM
+                </time>
               </div>
             </div>
           </div>
         </div>
       </div>
     </App>
-  )
-}
+  );
+};
