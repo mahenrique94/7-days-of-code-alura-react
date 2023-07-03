@@ -4,6 +4,7 @@ Projeto para o #7DaysOfCode de #React para a Alura.
 ## Tecnologias:
 - JavaScript
 - React
+- React Hook Form
 - React Router
 - Tailwind
 - Firebase
