@@ -1,13 +1,30 @@
+import { getDatabase, ref, set, onValue } from "firebase/database";
 import jwtDecode from "jwt-decode";
-import { useState } from "react";
+import PropTypes from "prop-types";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import * as uuid from "uuid";
 
 import { App } from "../layouts/App";
 
-export const Home = () => {
+export const Home = ({ app }) => {
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
   const navigate = useNavigate();
   const user = jwtDecode(localStorage.getItem("access-token"));
+
+  useEffect(() => {
+    onValue(ref(getDatabase(app), "alurites"), (snapshot) => {
+      const data = [];
+      snapshot.forEach((registry) => {
+        data.push({
+          ...registry.val(),
+          id: registry.key,
+        });
+      });
+      setMessages(data);
+    });
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("access-token");
@@ -16,7 +33,12 @@ export const Home = () => {
 
   const handleFormSubmit = (event) => {
     event.preventDefault();
-    console.log("PUBLICANDO UM NOVO TWEET");
+    const db = getDatabase(app);
+    set(ref(db, `alurites/${uuid.v4()}`), {
+      message,
+      by: user.email,
+      when: new Date().getTime(),
+    }).then(() => setMessage(""));
   };
 
   return (
@@ -67,22 +89,29 @@ export const Home = () => {
             </div>
           </form>
           <div className="pt-5">
-            <div className="border px-4 py-2 bg-white rounded mt-5 first:mt-0">
-              <p className="text-gray-500 py-2 mb-5">
-                Pagina principal com estrutura e estilos
-              </p>
-              <div className="flex justify-between">
-                <span className="text-sm text-sky-500">
-                  email@exemplo.com.br
-                </span>
-                <time className="text-xs text-gray-500">
-                  01/01/2023 5:00:00 PM
-                </time>
-              </div>
-            </div>
+            {messages
+              .sort((m1, m2) => m2.when - m1.when)
+              .map((m) => (
+                <div
+                  className="border px-4 py-2 bg-white rounded mt-5 first:mt-0"
+                  key={m.id}
+                >
+                  <p className="text-gray-500 py-2 mb-5">{m.message}</p>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-sky-500">{m.by}</span>
+                    <time className="text-xs text-gray-500">
+                      {new Date(m.when).toLocaleString()}
+                    </time>
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
       </div>
     </App>
   );
+};
+
+Home.propTypes = {
+  app: PropTypes.any.isRequired,
 };
